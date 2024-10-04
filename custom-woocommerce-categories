@@ -1,0 +1,75 @@
+<?php
+/*
+Plugin Name: Custom WooCommerce Categories
+Description: Adds custom categories (Goals and Sports) for WooCommerce.
+Version: 1.0
+Author: Your Name
+*/
+
+// Hook to initialize the custom taxonomies
+add_action('init', 'create_custom_woocommerce_taxonomies');
+
+function create_custom_woocommerce_taxonomies() {
+    // Create 'Goals' custom taxonomy
+    register_taxonomy('goals', 'product', array(
+        'label' => __('Goals'),
+        'rewrite' => array('slug' => 'goals'),
+        'hierarchical' => true,
+    ));
+
+    // Create 'Sports' custom taxonomy
+    register_taxonomy('sports', 'product', array(
+        'label' => __('Sports'),
+        'rewrite' => array('slug' => 'sports'),
+        'hierarchical' => true,
+    ));
+}
+
+// Hook to add the custom taxonomies to the WooCommerce product admin
+add_filter('product_type_selector', 'add_custom_product_type');
+
+function add_custom_product_type($types) {
+    $types['goals'] = __('Goals');
+    $types['sports'] = __('Sports');
+    return $types;
+}
+
+// Add a column for custom taxonomies in the products list
+add_filter('manage_edit-product_columns', 'add_custom_taxonomy_column');
+
+function add_custom_taxonomy_column($columns) {
+    $columns['goals'] = __('Goals');
+    $columns['sports'] = __('Sports');
+    return $columns;
+}
+
+// Add data to the custom taxonomy column in the products list
+add_action('manage_product_posts_custom_column', 'show_custom_taxonomy_column_data', 10, 2);
+
+function show_custom_taxonomy_column_data($column, $post_id) {
+    if ($column == 'goals') {
+        $terms = get_the_terms($post_id, 'goals');
+        if ($terms && !is_wp_error($terms)) {
+            $terms_list = array();
+            foreach ($terms as $term) {
+                $terms_list[] = $term->name;
+            }
+            echo implode(', ', $terms_list);
+        } else {
+            echo __('No Goals');
+        }
+    }
+    
+    if ($column == 'sports') {
+        $terms = get_the_terms($post_id, 'sports');
+        if ($terms && !is_wp_error($terms)) {
+            $terms_list = array();
+            foreach ($terms as $term) {
+                $terms_list[] = $term->name;
+            }
+            echo implode(', ', $terms_list);
+        } else {
+            echo __('No Sports');
+        }
+    }
+}
